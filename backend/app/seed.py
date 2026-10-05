@@ -10,6 +10,10 @@ def init_db():
     );
     CREATE TABLE IF NOT EXISTS consumptions(id INTEGER PRIMARY KEY AUTOINCREMENT, note TEXT, result_json TEXT, created_at TEXT);
     CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT);
+    CREATE TABLE IF NOT EXISTS expiry_ledger(
+      id INTEGER PRIMARY KEY AUTOINCREMENT, lot_id INT, item_id INT, qty_remain REAL,
+      expiry TEXT, reason TEXT, created_at TEXT
+    );
     """)
     if c.execute("SELECT COUNT(*) c FROM items").fetchone()["c"] == 0:
         c.executemany("INSERT INTO items(name,layer,unit) VALUES (?,?,?)", [

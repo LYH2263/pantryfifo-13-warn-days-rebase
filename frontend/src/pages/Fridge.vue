@@ -14,11 +14,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '../api'
+import { store } from '../store'
 const rows = ref([])
 const layers = ['upper','mid','lower']
 const label = { upper: '上层', mid: '中层', lower: '下层' }
 function by(L) { return rows.value.filter(r => r.layer === L) }
 async function load() { rows.value = await api('/fridge') }
-async function sweep() { await api('/expire-sweep', { method: 'POST', body: '{}' }); await load() }
+async function sweep() {
+  await api('/expire-sweep', { method: 'POST', body: '{}' })
+  // 下架履历、状态翻转在后端同一事务完成；顶条与全层一起重拉，不会再报已下架批次
+  await Promise.all([load(), store.refreshAlerts()])
+}
 onMounted(load)
 </script>
