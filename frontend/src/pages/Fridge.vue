@@ -14,11 +14,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '../api'
+import { refreshAlerts } from '../store'
 const rows = ref([])
 const layers = ['upper','mid','lower']
 const label = { upper: '上层', mid: '中层', lower: '下层' }
 function by(L) { return rows.value.filter(r => r.layer === L) }
 async function load() { rows.value = await api('/fridge') }
-async function sweep() { await api('/expire-sweep', { method: 'POST', body: '{}' }); await load() }
+async function sweep() {
+  await api('/expire-sweep', { method: 'POST', body: '{}' })
+  await load()
+  await refreshAlerts() // 下架后顶条同步消失，与全层/履历同进同退
+}
 onMounted(load)
 </script>

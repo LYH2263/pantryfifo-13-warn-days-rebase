@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="alert-bar" v-if="alerts.length">临期预警：{{ alerts.map(a => a.name + '(' + a.level + ')').join(' · ') }}</div>
+    <div class="alert-bar" v-if="alerts.length">临期预警：{{ alerts.map(a => a.name + '(' + levelText[a.level] + (a.days_left != null ? '剩' + a.days_left + '天' : '') + ')').join(' · ') }}</div>
     <div class="alert-bar" v-else>临期预警带：暂无紧急批次</div>
     <div class="wrap">
       <nav class="layer-tabs">
@@ -17,8 +17,14 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
-import { api } from './api'
-const alerts = ref([])
-onMounted(async () => { try { alerts.value = await api('/alerts') } catch { alerts.value = [] } })
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { alerts, levelText, loadSettings, refreshAlerts } from './store'
+// 切页（消费/下架后返回）时顶条重新现算，保持与全层同源
+const router = useRouter()
+onMounted(async () => {
+  await loadSettings().catch(() => {})
+  await refreshAlerts()
+  router.afterEach(() => refreshAlerts())
+})
 </script>
